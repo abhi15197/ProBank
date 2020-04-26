@@ -16,13 +16,14 @@ import com.cg.entity.Account;
 import com.cg.entity.Transaction;
 
 @Service
-public class BankService {
+public class BankService implements IBankService{
 	
 	@Autowired
 	private IAccountDao accountDao;
 	@Autowired
 	private ITransactionDao transactionDao;
 
+	@Override
 	public Account createAccount(NewAccount request) throws BankException
 	{
 		
@@ -45,32 +46,77 @@ public class BankService {
 		return 	account;
 	}
 	
-
+	@Override
 	public Transaction createTransaction(NewTransaction request, int accountId) throws BankException
 	{
-		getAccount(request.getTransaction().getTransFrom());
-		getAccount(request.getTransaction().getTransTo());
+		
 		if(request.getTransaction().getTransDate()==null)
 			throw new BankException("Invalid Date");
 		
-		
 		Account account=getAccount(accountId);
-		if(request.getTransaction().getTransType().equalsIgnoreCase("Debit"))
-		{
-			if(request.getTransaction().getTransAmount()>getAccount(accountId).getAccountBalance())
-				throw new BankException("Insufficient Balance to Complete the Transaction");
-			account.setAccountBalance(account.getAccountBalance()-request.getTransaction().getTransAmount());
-		}	
-		if(request.getTransaction().getTransType().equalsIgnoreCase("Credit"))
-			account.setAccountBalance(account.getAccountBalance()+request.getTransaction().getTransAmount());
-		accountDao.save(account);
+		Account accountfrom=getAccount(request.getTransaction().getTransFrom());
+		Account accountto=getAccount(request.getTransaction().getTransTo());
 		
+		if(request.getTransaction().getTransOption().equalsIgnoreCase("BY Transfer"))
+		{
+			if(request.getTransaction().getTransFrom().equals(accountId)) {
+				
+				if(request.getTransaction().getTransFrom().equals(request.getTransaction().getTransTo()))
+					throw new BankException("Same Account Transfer");	
+				else 
+				{
+					if(request.getTransaction().getTransType().equalsIgnoreCase("Debit"))
+					{
+						if(request.getTransaction().getTransAmount()>getAccount(accountId).getAccountBalance())
+							throw new BankException("Insufficient Balance to Complete the Transaction");
+						accountfrom.setAccountBalance(accountfrom.getAccountBalance()-request.getTransaction().getTransAmount());
+						accountto.setAccountBalance(accountto.getAccountBalance()+request.getTransaction().getTransAmount());
+						
+						Transaction transaction=new Transaction();
+						transaction.setAccount(accountto);
+						transaction.setTransAmount(request.getTransaction().getTransAmount());
+						transaction.setTransClosingBalance(accountto.getAccountBalance()+request.getTransaction().getTransAmount());
+						transaction.setTransDate(new Date());
+						transaction.setTransFrom(request.getTransaction().getTransFrom());
+						transaction.setTransTo(request.getTransaction().getTransTo());
+						transaction.setTransOption("By Transfer");
+						transaction.setTransType("Credit");
+						transactionDao.save(transaction);
+						
+					}
+					if(request.getTransaction().getTransType().equalsIgnoreCase("Credit"))
+						throw new BankException("Credit is not an option of Account Transfer");
+					
+					accountDao.save(accountfrom);
+					accountDao.save(accountto);
+				}
+			}
+			else {
+				throw new BankException("Account Id Does Not Match with the account Required");
+			}
+				
+		}
+		
+		if(request.getTransaction().getTransOption().equalsIgnoreCase("BY SELF"))
+		{
+			if(request.getTransaction().getTransType().equalsIgnoreCase("Debit"))
+			{
+				if(request.getTransaction().getTransAmount()>getAccount(accountId).getAccountBalance())
+					throw new BankException("Insufficient Balance to Complete the Transaction");
+				account.setAccountBalance(account.getAccountBalance()-request.getTransaction().getTransAmount());
+			}	
+			if(request.getTransaction().getTransType().equalsIgnoreCase("Credit"))
+				account.setAccountBalance(account.getAccountBalance()+request.getTransaction().getTransAmount());
+			accountDao.save(account);
+		}
+		
+		request.getTransaction().setTransDate(new Date());
 		request.getTransaction().setAccount(getAccount(accountId));
 		request.getTransaction().setTransClosingBalance(getAccount(accountId).getAccountBalance());
 		return transactionDao.save(request.getTransaction());
-
 	}
 
+	@Override
 	public Transaction getTransaction(int transactionId) throws BankException {
 		try {
 			Optional<Transaction> transaction=transactionDao.findById(transactionId);
@@ -82,6 +128,7 @@ public class BankService {
 		}
 	}
 
+	@Override
 	public Account getAccount(int accountId) throws BankException {
 		
 		try {
@@ -95,18 +142,23 @@ public class BankService {
 		}	
 	}
 	
-	public List<Transaction> getTransactions(Date date) throws BankException {
+	@Override
+	public List<Transaction> getTransactionsAfterDate(Date date) throws BankException {
 		
 		if(date==null)
 			throw new BankException("Invalid Date");
+		if(date.after(new Date()))
+			throw new BankException("Invalid Date");
 		try {
-		return transactionDao.findBytransDate(date);}
+		return transactionDao.findTransactionAfterDate(date);
+		}
 		catch(Exception e)
 		{
 			throw new BankException(e.getMessage());
 		}
 	}
 
+	@Override
 	public List<Transaction> getTransactionOfAccount(int accountId) throws BankException {
 		
 		Account account=getAccount(accountId);	

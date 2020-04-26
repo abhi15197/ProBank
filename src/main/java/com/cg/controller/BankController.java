@@ -52,10 +52,10 @@ public class BankController {
 		return bankservice.getAccount(accountID);
 	}
 	
-	@GetMapping("/getAll")
+	@GetMapping("/updatePassbook")
 	public List<Transaction> getAllOfDate(Date date) throws BankException
 	{
-		return bankservice.getTransactions(date);
+		return bankservice.getTransactionsAfterDate(date);
 	}
 	
 }
