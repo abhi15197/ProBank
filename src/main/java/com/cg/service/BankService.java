@@ -4,17 +4,35 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
+import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.cg.Exception.BankException;
 import com.cg.dao.IAccountDao;
 import com.cg.dao.ITransactionDao;
+import com.cg.dao.IUpdateDateDao;
 import com.cg.dto.NewAccount;
 import com.cg.dto.NewTransaction;
+import com.cg.dto.Transaction2;
 import com.cg.entity.Account;
 import com.cg.entity.Transaction;
+import com.cg.entity.UpdateDate;
 
+
+/*
+ * Service Class:
+ * this is the class which mainly communicates between controller class and Dao Interfaces which are basically JPA Repository
+ * this class deals with all the maojor functions in the program.
+ * So,all the logics are mainly handled here, like
+ * @creating account logic 
+ * @creating new transaction
+ * @fetching any account
+ * @fetching transactions of a single account
+ * @fetching any transaction
+ * also updating passbook logic is implemented which takes a date and returns the transactions happened after that date
+ */
 @Service
 public class BankService implements IBankService{
 	
@@ -22,42 +40,60 @@ public class BankService implements IBankService{
 	private IAccountDao accountDao;
 	@Autowired
 	private ITransactionDao transactionDao;
+	@Autowired
+	private IUpdateDateDao updateDateDao;
 
 	@Override
-	public Account createAccount(NewAccount request) throws BankException
+	public String createAccount(NewAccount request) throws BankException
 	{
-		
-		Date date=new Date();
 		Transaction newtransaction=new Transaction();
+		//accountDao.save(request.getAccount());
 		
-		Account account=accountDao.save(request.getAccount());
 		newtransaction.setTransAmount(request.getAccount().getAccountBalance());
-		newtransaction.setTransClosingBalance(request.getAccount().getAccountBalance());
-		newtransaction.setTransDate(date);
 		newtransaction.setTransFrom(request.getAccount().getAccountId());
-		newtransaction.setTransOption("New Account Created");
+		newtransaction.setTransOption("Cash");
 		newtransaction.setTransTo(request.getAccount().getAccountId());
 		newtransaction.setTransType("Credit");
-		
 		NewTransaction newTrans=new NewTransaction();
 		newTrans.setTransaction(newtransaction);
+		
 		createTransaction(newTrans, request.getAccount().getAccountId());
 		
-		return 	account;
+		UpdateDate updateDate = new UpdateDate();
+		updateDate.setAccountId(request.getAccount().getAccountId());
+		updateDate.setLastUpdateDate(new Date());
+		updateDate.setAccount(request.getAccount());
+		updateDateDao.save(updateDate);
+		
+		return 	"account created";
 	}
 	
 	@Override
-	public Transaction createTransaction(NewTransaction request, int accountId) throws BankException
-	{
+	public String newTransaction(@Valid Transaction2 transaction2, String accountId) throws BankException {
+		Transaction req=new Transaction();
+		req.setTransAmount(transaction2.getTransAmount());
+		req.setTransFrom(transaction2.getTransFrom());
+		req.setTransTo(transaction2.getTransTo());
+		req.setTransType(transaction2.getTransType());
+		req.setTransOption(transaction2.getTransOption());
+		NewTransaction request=new NewTransaction();
+		request.setTransaction(req);
+		return createTransaction(request, accountId);
+	}
+
+	@Override
+	public String createTransaction(NewTransaction request, String accountId) throws BankException
+	{	
 		
-		if(request.getTransaction().getTransDate()==null)
-			throw new BankException("Invalid Date");
-		
+		Transaction transaction=new Transaction();
 		Account account=getAccount(accountId);
+		
 		Account accountfrom=getAccount(request.getTransaction().getTransFrom());
+		
 		Account accountto=getAccount(request.getTransaction().getTransTo());
 		
-		if(request.getTransaction().getTransOption().equalsIgnoreCase("BY Transfer"))
+		
+		if(request.getTransaction().getTransOption().equalsIgnoreCase("Transfer"))
 		{
 			if(request.getTransaction().getTransFrom().equals(accountId)) {
 				
@@ -72,14 +108,14 @@ public class BankService implements IBankService{
 						accountfrom.setAccountBalance(accountfrom.getAccountBalance()-request.getTransaction().getTransAmount());
 						accountto.setAccountBalance(accountto.getAccountBalance()+request.getTransaction().getTransAmount());
 						
-						Transaction transaction=new Transaction();
+						
 						transaction.setAccount(accountto);
 						transaction.setTransAmount(request.getTransaction().getTransAmount());
-						transaction.setTransClosingBalance(accountto.getAccountBalance()+request.getTransaction().getTransAmount());
+						transaction.setTransClosingBalance(accountto.getAccountBalance());
 						transaction.setTransDate(new Date());
 						transaction.setTransFrom(request.getTransaction().getTransFrom());
 						transaction.setTransTo(request.getTransaction().getTransTo());
-						transaction.setTransOption("By Transfer");
+						transaction.setTransOption("Transfer");
 						transaction.setTransType("Credit");
 						transactionDao.save(transaction);
 						
@@ -97,7 +133,7 @@ public class BankService implements IBankService{
 				
 		}
 		
-		if(request.getTransaction().getTransOption().equalsIgnoreCase("BY SELF"))
+		if(request.getTransaction().getTransOption().equalsIgnoreCase("Cash"))
 		{
 			if(request.getTransaction().getTransType().equalsIgnoreCase("Debit"))
 			{
@@ -113,7 +149,9 @@ public class BankService implements IBankService{
 		request.getTransaction().setTransDate(new Date());
 		request.getTransaction().setAccount(getAccount(accountId));
 		request.getTransaction().setTransClosingBalance(getAccount(accountId).getAccountBalance());
-		return transactionDao.save(request.getTransaction());
+		
+		transactionDao.save(request.getTransaction());
+		return "Transaction Done";
 	}
 
 	@Override
@@ -129,7 +167,7 @@ public class BankService implements IBankService{
 	}
 
 	@Override
-	public Account getAccount(int accountId) throws BankException {
+	public Account getAccount(String accountId) throws BankException {
 		
 		try {
 			
@@ -143,28 +181,32 @@ public class BankService implements IBankService{
 	}
 	
 	@Override
-	public List<Transaction> getTransactionsAfterDate(Date date) throws BankException {
-		
-		if(date==null)
-			throw new BankException("Invalid Date");
-		if(date.after(new Date()))
-			throw new BankException("Invalid Date");
-		try {
-		return transactionDao.findTransactionAfterDate(date);
+	public List<Transaction> updatePassbook(String accountId) throws BankException {
+	try {
+			Account acc=getAccount(accountId);
+			Optional<UpdateDate> update=updateDateDao.findById(accountId);
+			UpdateDate updateDate=update.get();
+			Date date=updateDate.getLastUpdateDate();
+			Date newdate=new Date();
+			updateDate.setLastUpdateDate(newdate);
+			updateDateDao.save(updateDate);
+			return transactionDao.findTransactionAfterDate(date,acc);
 		}
 		catch(Exception e)
 		{
-			throw new BankException(e.getMessage());
+			throw new BankException("Update Failed");
 		}
 	}
 
 	@Override
-	public List<Transaction> getTransactionOfAccount(int accountId) throws BankException {
+	public List<Transaction> getTransactionOfAccount(String accountId) throws BankException {
 		
 		Account account=getAccount(accountId);	
 		if(account==null)
 			throw new BankException("No Account Associated to "+accountId);
 		return transactionDao.getTransactionsOfAccount(account);
 	}
+
+	
 
 }

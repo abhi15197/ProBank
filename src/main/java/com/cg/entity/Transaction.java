@@ -69,11 +69,11 @@ public class Transaction implements Serializable{
 	
 	@Column(name="transaction_From")
 	@NotNull(message="Transaction From is Mandatory")
-	private Integer transFrom;
+	private String transFrom;
 	
 	@Column(name="transaction_to")
 	@NotNull(message="Transaction To is Mandatory")
-	private Integer transTo;
+	private String transTo;
 	
 	@Column(name="transaction_closing_balance")
 	@NotNull(message="Closing Balance is Mandatory")

@@ -4,6 +4,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.cg.entity.Account;
 
-public interface IAccountDao extends JpaRepository<Account, Integer> {
+public interface IAccountDao extends JpaRepository<Account, String> {
 
 }

@@ -20,6 +20,6 @@ public interface ITransactionDao extends JpaRepository<Transaction, Integer>{
 		
 		List<Transaction> findBytransDate(Date date);
 		
-		@Query("from Transaction t where t.transDate>=?1")
-		List<Transaction> findTransactionAfterDate(Date date);
+		@Query("from Transaction t where t.transDate>=?1 and t.account=?2")
+		List<Transaction> findTransactionAfterDate(Date date,Account account);
 }
