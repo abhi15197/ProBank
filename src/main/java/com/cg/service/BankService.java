@@ -47,13 +47,13 @@ public class BankService implements IBankService{
 	public String createAccount(NewAccount request) throws BankException
 	{
 		Transaction newtransaction=new Transaction();
-		//accountDao.save(request.getAccount());
+		accountDao.save(request.getAccount());
 		
 		newtransaction.setTransAmount(request.getAccount().getAccountBalance());
 		newtransaction.setTransFrom(request.getAccount().getAccountId());
 		newtransaction.setTransOption("Cash");
 		newtransaction.setTransTo(request.getAccount().getAccountId());
-		newtransaction.setTransType("Credit");
+		newtransaction.setTransType("New Account Credit");
 		NewTransaction newTrans=new NewTransaction();
 		newTrans.setTransaction(newtransaction);
 		
@@ -134,7 +134,7 @@ public class BankService implements IBankService{
 		}
 		
 		if(request.getTransaction().getTransOption().equalsIgnoreCase("Cash"))
-		{
+		{request.getTransaction().setTransTo(accountId);
 			if(request.getTransaction().getTransType().equalsIgnoreCase("Debit"))
 			{
 				if(request.getTransaction().getTransAmount()>getAccount(accountId).getAccountBalance())
@@ -143,6 +143,8 @@ public class BankService implements IBankService{
 			}	
 			if(request.getTransaction().getTransType().equalsIgnoreCase("Credit"))
 				account.setAccountBalance(account.getAccountBalance()+request.getTransaction().getTransAmount());
+			if(request.getTransaction().getTransType().equalsIgnoreCase("New Account Credit"))
+				account.setAccountBalance(account.getAccountBalance());
 			accountDao.save(account);
 		}
 		
