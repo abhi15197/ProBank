@@ -1,0 +1,51 @@
+<form class="Tranactionform">
+    <mat-form-field class="account-full-width">
+      <mat-label>Account Number</mat-label>
+      
+      <input matInput placeholder="Enter the Account Number" type ="number"
+       [formControl]="vAccountID" [(ngModel)]="accountId" name=accountid required>
+    <mat-error *ngIf="vAccountID.invalid">{{getErrorMessage()}}</mat-error>
+    </mat-form-field>
+    <button mat-raised-button color="primary" type="submit" [disabled]="!vAccountID.valid" (click)="getTransaction()">Get Transaction</button>
+  </form>
+
+  <div  *ngIf="errormsg != undefined" [innerHTML]="errormsg"></div>
+
+
+
+
+
+
+
+  <div class="container-fluids" *ngIf="transaction!=undefined">
+    <div class="row col-md-6 col-md-offset-2 custyle">
+    <table class="table table-striped custab">
+    <thead>
+        <tr>
+            <th>Transaction ID</th>
+            <th>Transaction Date</th>
+            <th>Transaction From</th>
+            <th>Transaction To</th>
+            <th>Transaction Option</th>
+            <th>Transaction Type</th>
+            <th>Transaction Amount</th>
+            <th>Closing Balance</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr *ngFor="let trans of transaction">
+            <td>{{trans.transactionID}}</td>
+            <td>{{trans.transDate|date:'short'}}</td>
+            <td>{{trans.transFrom}}</td>
+            <td>{{trans.transTo}}</td>
+            <td>{{trans.transOption|titlecase}}</td>
+            <td>{{trans.transType|titlecase}}</td>
+            <td>{{trans.transAmount|currency:'INR'}}</td> 
+            <td>{{trans.transClosingBalance|currency:'INR'}}</td>
+      </tr>
+          
+    </tbody>
+    </table>
+</div>
+
+

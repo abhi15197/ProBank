@@ -1,0 +1,40 @@
+
+<div 
+matRipple
+[matRippleCentered]="centered"
+[matRippleDisabled]="disabled"
+[matRippleUnbounded]="unbounded"
+[matRippleRadius]="radius"
+[matRippleColor]="color">
+
+    <mat-toolbar color="primary">
+     <mat-icon>eco</mat-icon> 
+     <span mat-button routerLink="home"> Pro Bank</span>
+    
+     <div class="spacer"></div>
+
+
+   <a mat-button [matMenuTriggerFor]="account" >Account</a>
+   <mat-menu #account="matMenu">
+    <button mat-menu-item routerLink="accountdetails">Account Details</button>
+    <button mat-menu-item>Account Summary</button>
+    <button mat-menu-item>Update Account</button>
+    <button mat-menu-item>Delete Account</button>
+  </mat-menu>
+
+   <a mat-button  [matMenuTriggerFor]="transaction" >Transaction</a>
+   <mat-menu #transaction="matMenu">
+    <button mat-menu-item routerLink="updatepassbook">Update Passbook</button>
+    <button mat-menu-item routerLink="dotransaction">New Transaction</button>
+    <button mat-menu-item routerLink="viewtransaction">View All Transactions</button>
+  </mat-menu>
+
+   <a mat-button [matMenuTriggerFor]="loan">Loan</a>
+   <mat-menu #loan="matMenu">
+    <button mat-menu-item routerLink="#">New Loan</button>
+    <button mat-menu-item routerLink="#">Approve Loan</button>
+  </mat-menu>
+   <a mat-raised-button color="accent">Create Account</a>
+   
+   </mat-toolbar>
+</div>

@@ -1,0 +1,44 @@
+<form class="accountform">
+    <mat-form-field class="account-full-width">
+      <mat-label>Account Number</mat-label>
+      
+      <input matInput placeholder="Enter the Account Number" type ="number"
+       [formControl]="vAccountID" [(ngModel)]="accountId" name=accountid required>
+    <mat-error *ngIf="vAccountID.invalid">{{getErrorMessage()}}</mat-error>
+    </mat-form-field>
+    <button mat-raised-button color="primary" type="submit" [disabled]="!vAccountID.valid" (click)="getAccount()">Search</button>
+  </form>
+  
+  <div  *ngIf="errormsg != undefined" [innerHTML]="errormsg"></div>
+
+  <div class="container-fluids" *ngIf="account!=undefined">
+    <div class="row col-md-6 col-md-offset-2 custyle">
+    <table class="table table-striped custab">
+    <thead>
+        <tr>
+            <th>Account ID</th>
+            <th>Account Holder Name</th>
+            <th>Branch ID</th>
+            <th>Account Status</th>
+            <th>Account Type</th>
+            <th>Account Balance</th>
+            <th>Loan Intrest</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>{{account.accountId}}</td>
+            <td>{{account.accountHolderName|uppercase}}</td>
+            <td>{{account.accountBranchId}}</td>
+            <td>{{account.accountType |titlecase}}</td>
+            <td>{{account.accountStatus|titlecase}}</td>
+            <td>{{account.accountBalance|currency:'INR'}}</td>
+            <td>{{account.accountIntrest|currency:'INR'}}</td>  
+      </tr>
+          
+    </tbody>
+    </table>
+</div>
+
+
+

@@ -1,0 +1,61 @@
+<section fxLayout="row wrap" fxLayoutAlign="center center" >
+   <mat-card fxFlex="500px" fxFlex.xs="100%" style="background-color: aqua;">
+       <mat-card-title>Create New Transaction</mat-card-title>
+       <form [formGroup]="transferForm" autocomplete="off" novalidate (ngSubmit)="createTransaction()" fxLayout="column wrap"
+      fxLayoutAlign="center center" fxLayoutGap="10px">
+       <mat-card-content>
+         <mat-form-field>
+            <input matInput type="number" placeholder="Transfering Account" formControlName="transfrom" id="transfrom" required>
+            <mat-hint align="end">Enter the Account ID from which the Tranfer amount to be inisiated</mat-hint>
+            <mat-error *ngIf="hasError('transfrom', 'required')">This is required</mat-error>
+            <mat-error *ngIf="hasError('transfrom', 'maxlength')">Invalid Account Number</mat-error>
+            <mat-error *ngIf="hasError('transfrom', 'minlength')">Invalid Account Number</mat-error>
+          </mat-form-field>
+
+          <mat-form-field>
+            <input matInput type="number" placeholder="Receiving Account" formControlName="transto" id="transto" required>
+            <mat-hint align="end">Enter the Account ID to which the Tranfer amount to be transfered</mat-hint>
+            <mat-error *ngIf="hasError('transto', 'required')">This is required</mat-error>
+            <mat-error *ngIf="hasError('transto', 'maxlength')">Invalid Account Number</mat-error>
+            <mat-error *ngIf="hasError('transfrom', 'minlength')">Invalid Account Number</mat-error>
+          </mat-form-field>
+
+          <mat-form-field>
+            <mat-label>Transaction Type</mat-label>
+            <mat-select formControlName="transtype" id="transtype" required>
+              <mat-option *ngFor="let type of transtypes" [value]="type.value">
+                {{type.viewValue}}
+              </mat-option>
+            </mat-select>
+            <mat-error *ngIf="hasError('transtype', 'required')">This is required</mat-error>
+          </mat-form-field>
+
+          <mat-form-field>
+            <mat-label>Transaction Option</mat-label>
+            <mat-select formControlName="transoption" id="transoption" required>
+              <mat-option *ngFor="let option of transoptions" [value]="option.value">
+                {{option.viewValue}}
+              </mat-option>
+            </mat-select>
+            <mat-error *ngIf="hasError('transoption', 'required')">This is required</mat-error>
+          </mat-form-field>
+
+          <mat-form-field>
+            <input matInput type="number" placeholder="Amount" formControlName="transamount" id="transamount" required>
+            <mat-hint align="end">Enter the Amount to be transfered</mat-hint>
+            <mat-error *ngIf="hasError('transamount', 'required')">This is required</mat-error>
+            <mat-error *ngIf="hasError('transamount', 'maxlength')">Invalid Amount</mat-error>
+          </mat-form-field>
+
+       </mat-card-content>
+       
+      <mat-card-actions align="center">
+          <button mat-raised-button color="primary" [disabled]="!transferForm.valid">Create</button>
+          <button type="button" mat-raised-button color="warn" (click)="onCancel()">Cancel</button>
+      </mat-card-actions>
+      </form>
+   </mat-card>
+</section>
+
+<div  *ngIf="errormsg != undefined" [innerHTML]="errormsg"></div>
+<div *ngIf="message !=undefined">{{message}}</div>

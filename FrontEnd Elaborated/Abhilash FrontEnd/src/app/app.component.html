@@ -1,0 +1,44 @@
+<app-navbar></app-navbar>
+
+
+ <mat-grid-list cols="5" rowHeight="19%" >
+   <mat-grid-tile
+   [style.background]='pink'
+   [colspan]="1" [rowspan]="1">
+   
+    <img src="assets/imgbank.png" height="80%" width="100%">
+   
+   
+   </mat-grid-tile>
+
+   <mat-grid-tile
+   [colspan]="3" [rowspan]="5"
+   [style.background]='aqua'>
+   <router-outlet></router-outlet>
+ </mat-grid-tile>
+ 
+ <mat-grid-tile
+ [colspan]="1" [rowspan]="1"
+ [style.background]='pink' >
+<img src="assets/imgbank.png" height="80%" width="100%">
+
+ </mat-grid-tile>
+
+ <mat-grid-tile
+ [colspan]="1" [rowspan]="4"
+ [style.background]='white' >
+<img src="assets/bank.ico" >
+
+ </mat-grid-tile>
+ <mat-grid-tile
+ [colspan]="1" [rowspan]="4"
+ [style.background]='pink' >
+<img src="assets/probank2.jpg" height="100%" width="100%">
+
+ </mat-grid-tile>
+
+ </mat-grid-list>
+ 
+ 
+ 
+ 
